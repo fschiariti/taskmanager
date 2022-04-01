@@ -2,36 +2,44 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using TaskManager.Controller;
+using TaskManager.ViewModel;
 
-namespace WinFormsApp1
+
+namespace TaskManager
 {
     public partial class frmProcesses : Form
     {
-        public frmProcesses()
-        {
-            InitializeComponent();
-        }
+        #region definitions
 
+        private ProcessInformationViewModel p = new ProcessInformationViewModel();
         private List<ProcessesInformation> l = new List<ProcessesInformation>();
         private BindingSource bs = new BindingSource();
 
-        private void LoadData()
+        public frmProcesses()
         {
-            ProcessesInformation p = new ProcessesInformation();
-            l = p.GetProcesses();
+            InitializeComponent();
+
+            bckWorker.DoWork += bckWorker_DoWork;
+            bckWorker.ProgressChanged += bckWorker_ProgressChanged;
+        }
+
+
+        #endregion
+
+        #region methods
+
+        private async Task<int> LoadDataAsync()
+        {
+            bckWorker.WorkerReportsProgress = true;
+            bckWorker.RunWorkerAsync();
+            l = await p.GetProcessesAsync();
             DataBind();
+            return l.Count();
         }
 
-        private void btnRefresh_Click(object sender, EventArgs e)
-        {
-            LoadData();
-        }
-
-        private void frmProcesses_Load(object sender, EventArgs e)
-        {
-            LoadData();
-        }
 
         private void DataBind()
         {
@@ -66,7 +74,35 @@ namespace WinFormsApp1
 
         }
 
+
+        #endregion
+
+        #region events
+
+        private async void frmProcesses_Load(object sender, EventArgs e)
+        {
+            await LoadDataAsync();
+        }
+
+        private async void btnRefreshAsync_Click(object sender, EventArgs e)
+        {
+            await LoadDataAsync();
+        }
+
+        private void bckWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            for (int i = 0; i < 50; i++)
+            {
+                System.Threading.Thread.Sleep(1000);
+                bckWorker.ReportProgress(i * 2);
+            }
+        }
+
+        private void bckWorker_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            pBar.Value = e.ProgressPercentage;
+        }
+
+        #endregion
     }
 }
-
-
