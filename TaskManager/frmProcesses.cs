@@ -7,7 +7,6 @@ using System.Windows.Forms;
 using TaskManager.Controller;
 using TaskManager.ViewModel;
 
-
 namespace TaskManager
 {
     public partial class frmProcesses : Form
@@ -22,8 +21,8 @@ namespace TaskManager
         {
             InitializeComponent();
 
-            bckWorker.DoWork += bckWorker_DoWork;
-            bckWorker.ProgressChanged += bckWorker_ProgressChanged;
+            //bckWorker.DoWork += bckWorker_DoWork;
+            //bckWorker.ProgressChanged += bckWorker_ProgressChanged;
         }
 
 
@@ -33,11 +32,19 @@ namespace TaskManager
 
         private async Task<int> LoadDataAsync()
         {
-            bckWorker.WorkerReportsProgress = true;
-            bckWorker.RunWorkerAsync();
+            btnRefreshAsync.Enabled = false;
+
+            frmProcessDialog frm = new frmProcessDialog();
+            frm.FormBorderStyle = FormBorderStyle.None;
+            frm.Show();
+
             l = await p.GetProcessesAsync();
             DataBind();
+
+            frm.Close();
+            btnRefreshAsync.Enabled = true;
             return l.Count();
+
         }
 
 
@@ -52,19 +59,19 @@ namespace TaskManager
             dgvProcesses.Columns.Add(pid);
 
             DataGridViewColumn name = new DataGridViewTextBoxColumn();
-            name.Width = 300;
+            name.Width = 250;
             name.DataPropertyName = "name";
             name.Name = "Process name";
             dgvProcesses.Columns.Add(name);
 
             DataGridViewColumn exeName = new DataGridViewTextBoxColumn();
-            exeName.Width = 300;
+            exeName.Width = 400;
             exeName.DataPropertyName = "exeName";
             exeName.Name = "Process executable name";
             dgvProcesses.Columns.Add(exeName);
 
             DataGridViewColumn owner = new DataGridViewTextBoxColumn();
-            owner.Width = 200;
+            owner.Width = 700;
             owner.DataPropertyName = "owner";
             owner.Name = "Owner";
             dgvProcesses.Columns.Add(owner);
@@ -89,20 +96,14 @@ namespace TaskManager
             await LoadDataAsync();
         }
 
-        private void bckWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-            for (int i = 0; i < 50; i++)
-            {
-                System.Threading.Thread.Sleep(1000);
-                bckWorker.ReportProgress(i * 2);
-            }
-        }
 
-        private void bckWorker_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-        {
-            pBar.Value = e.ProgressPercentage;
-        }
 
         #endregion
+
+
+        private void frmProcesses_Resize(object sender, EventArgs e)
+        {
+            this.btnRefreshAsync.Top = this.dgvProcesses.Bottom + 10;
+        }
     }
 }

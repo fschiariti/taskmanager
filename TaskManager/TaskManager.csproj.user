@@ -4,5 +4,8 @@
     <Compile Update="frmProcesses.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="frmProcessDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
 </Project>
